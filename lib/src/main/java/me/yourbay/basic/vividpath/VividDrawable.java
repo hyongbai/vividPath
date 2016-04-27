@@ -49,8 +49,14 @@ public class VividDrawable extends Drawable implements VividListener {
         this.mVividPath = new VividPath(path);
     }
 
+    public VividPath getVividPath() {
+        return mVividPath;
+    }
+
     public VividDrawable setPath(Path path) {
         mVividPath.setPath(path);
+        mProgress = 0;
+        start();
         return this;
     }
 
@@ -58,6 +64,7 @@ public class VividDrawable extends Drawable implements VividListener {
     public void destroy() {
         if (mAnimator != null) {
             mAnimator.cancel();
+            mAnimator = null;
         }
     }
 
