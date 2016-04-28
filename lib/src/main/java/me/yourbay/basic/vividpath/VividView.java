@@ -78,7 +78,7 @@ public class VividView extends View implements VividListener {
         super(context, attrs, defStyleAttr);
     }
 
-    public void setPath(Path path) {
+    public VividPath setPath(Path path) {
         if (mVividDrawable == null) {
             mVividDrawable = new VividDrawable(path);
             // this must be invoked, or Drawable.invalidSelf will not work
@@ -87,6 +87,7 @@ public class VividView extends View implements VividListener {
             mVividDrawable.setPath(path);
         }
         requestLayout();
+        return mVividDrawable.getVividPath();
     }
 
     @Override
@@ -102,5 +103,9 @@ public class VividView extends View implements VividListener {
             mVividDrawable.start();
         }
         return null;
+    }
+
+    public VividDrawable getVividDrawable() {
+        return mVividDrawable;
     }
 }

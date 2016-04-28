@@ -14,12 +14,18 @@ import android.util.Pair;
  * Created by ram on 16/4/4.
  */
 public class VividPath {
+    public enum Mode {
+        Piece,
+        Increase,
+    }
+
+    private Mode mMode = Mode.Piece;
     //
     private Matrix mMatrix;
     private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     //
     private RectF mPathBound = new RectF();
-    private int[] colors = {0x44FFFFFF, 0x88FFFFFF};
+    private int[] mColors = {0x11000000, 0xFFFFFFFF};
     private PathParseHelper mParseHelper = new PathParseHelper();
 
     public VividPath(Path path) {
@@ -31,6 +37,24 @@ public class VividPath {
         mPaint.setStrokeWidth(Resources.getSystem().getDisplayMetrics().density * 2);
     }
 
+    /**
+     * @param colors colors[0] is the entire path color, colors[1] is the color of current piece.
+     * @return
+     */
+    public VividPath setColors(int[] colors) {
+        final int len = (colors != null) ? colors.length : 0;
+        if (len == 0) {
+            return this;
+        }
+        if (len == 1) {
+            mColors = new int[2];
+            mColors[0] = mColors[1] = colors[0];
+        } else {
+            mColors = colors;
+        }
+        return this;
+    }
+
     public VividPath setPath(Path path) {
         mParseHelper.setRawPath(path);
         if (path != null) {
@@ -38,6 +62,11 @@ public class VividPath {
         } else {
             mPathBound.setEmpty();
         }
+        return this;
+    }
+
+    public VividPath setMode(Mode mode) {
+        mMode = mode;
         return this;
     }
 
@@ -87,24 +116,35 @@ public class VividPath {
             final float l = pm.getLength();
             final float fragmentLen = 0.05f;
             //
-            if (showEntire) {
+            if (showEntire && ((mColors[0] & 0xff000000) > 0)) {
                 path.rewind();
                 pm.getSegment(0, l, path, true);
                 path.rLineTo(0.0f, 0.0f);
                 if (mMatrix != null) {
                     path.transform(mMatrix);
                 }
-                mPaint.setColor(colors[0]);
+                mPaint.setColor(mColors[0]);
                 canvas.drawPath(path, mPaint);
             }
             //
             path.rewind();
-            SegmentCalculator.setSegment(pm, path, p, p + fragmentLen);
+            final float startD, endD;
+            if (mMode == Mode.Increase) {
+                startD = 0f;
+                endD = p;
+            } else if (mMode == Mode.Piece) {
+                startD = p;
+                endD = p + fragmentLen;
+            } else {
+                startD = 0f;
+                endD = p;
+            }
+            SegmentCalculator.setSegment(pm, path, startD, endD);
             path.rLineTo(0.0f, 0.0f);
             if (mMatrix != null) {
                 path.transform(mMatrix);
             }
-            mPaint.setColor(colors[1]);
+            mPaint.setColor(mColors[1]);
             canvas.drawPath(path, mPaint);
         }
     }
